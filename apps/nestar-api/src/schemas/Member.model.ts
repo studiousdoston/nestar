@@ -83,6 +83,7 @@ const MemberSchema = new Schema(
     memberRank: {
       type: Number,
       required: true,
+      default: 0,
     },
     memberWarnings: {
       type: Number,
