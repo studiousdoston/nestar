@@ -9,6 +9,4 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
   await app.listen(process.env.PORT_API ?? 3007);
 }
-bootstrap()
-  .then()
-  .catch((err) => console.log(err));
+bootstrap().catch((err) => console.log(err));

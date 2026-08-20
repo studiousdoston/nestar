@@ -29,6 +29,8 @@ export class MemberInput {
   memberAuthType?: MemberAuthType;
 }
 
+//------------------------------------------------------------------
+
 @InputType()
 export class LoginInput {
   @IsNotEmpty()

@@ -11,12 +11,13 @@ import { T } from './libs/types/common';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot(), //* help use PROCESS.ENV
     GraphQLModule.forRoot({
       driver: ApolloDriver,
       playground: true,
       uploads: false,
       autoSchemaFile: true,
+      //* GLOBAL ERROR HANDLING
       formatError: (error: T) => {
         const graphQLFormattedError = {
           code: error?.extensions.code,
@@ -27,8 +28,8 @@ import { T } from './libs/types/common';
         return graphQLFormattedError;
       },
     }),
-    ComponentsModule,
-    DatabaseModule,
+    ComponentsModule, //* COLLECTED MODULES
+    DatabaseModule, //* DATABASE MODULE
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],
