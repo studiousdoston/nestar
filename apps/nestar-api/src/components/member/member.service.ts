@@ -1,19 +1,24 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import { Member } from '../../libs/dto/member/member';
-import { LoginInput, MemberInput } from '../../libs/dto/member/member.input';
-import { MemberStatus } from '../../libs/enums/member.enum';
-import { Message } from '../../libs/enums/common.enum';
 import { AuthService } from '../auth/auth.service';
+import { ViewService } from '../view/view.service';
+import { Member } from '../../libs/dto/member/member';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
+import { MemberStatus } from '../../libs/enums/member.enum';
+import { LoginInput, MemberInput } from '../../libs/dto/member/member.input';
+
+import { Message } from '../../libs/enums/common.enum';
 import { T } from '../../libs/types/common';
+import { ViewGroup } from '../../libs/enums/view.enum';
+import { ViewInput } from '../../libs/dto/view/view.input';
 
 @Injectable()
 export class MemberService {
   constructor(
     @InjectModel('Member') private readonly memberModel: Model<Member>,
     private authService: AuthService,
+    private viewService: ViewService,
   ) {}
 
   //* ---- SIGNUP -----
@@ -68,17 +73,28 @@ export class MemberService {
   }
 
   //* ---- GET_MEMBER -----
-  public async getMember(targetId: ObjectId): Promise<Member> {
+  public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member> {
     const search: T = {
       _id: targetId,
       memberStatus: {
         $in: [MemberStatus.ACTIVE, MemberStatus.BLOCK],
       },
     };
-
-    const targetMember = await this.memberModel.findOne(search).exec();
-    
+    const targetMember = await this.memberModel.findOne(search).lean().exec();
     if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+    if (memberId) {
+      //* record view
+      const viewInput: ViewInput = { memberId, viewRefId: targetId, viewGroup: ViewGroup.MEMBER };
+      const newView = await this.viewService.recordView(viewInput);
+
+      if (newView) {
+        //* increment memberView
+        await this.memberModel.findOneAndUpdate(search, { $inc: { memberViews: 1 } }, { new: true });
+        targetMember.memberViews++;
+      }
+    }
+
     return targetMember;
   }
 
