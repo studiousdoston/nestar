@@ -3,12 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { AuthService } from '../auth/auth.service';
 import { ViewService } from '../view/view.service';
-import { Member } from '../../libs/dto/member/member';
+import { Member, Members } from '../../libs/dto/member/member';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
-import { MemberStatus } from '../../libs/enums/member.enum';
-import { LoginInput, MemberInput } from '../../libs/dto/member/member.input';
+import { MemberStatus, MemberType } from '../../libs/enums/member.enum';
+import { AgentsInquiry, LoginInput, MemberInput } from '../../libs/dto/member/member.input';
 
-import { Message } from '../../libs/enums/common.enum';
+import { Direction, Message } from '../../libs/enums/common.enum';
 import { T } from '../../libs/types/common';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { ViewInput } from '../../libs/dto/view/view.input';
@@ -95,7 +95,42 @@ export class MemberService {
       }
     }
 
+    //* Liked by me?
+    //* Followed by me?
+
     return targetMember;
+  }
+
+  //* ---- GET_AGENTS -----
+  public async getAgents(memberId: ObjectId, input: AgentsInquiry): Promise<Members> {
+    const { text } = input.search;
+    const match: T = {
+      memberType: MemberType.AGENT,
+      memberStatus: MemberStatus.ACTIVE,
+    };
+    const sort: T = {
+      [input?.sort ?? 'createdAt']: input.direction ?? Direction.DESC,
+    };
+
+    if (text) match.memberNick = { $regex: new RegExp(text, 'i') };
+    console.log('\n match', match);
+
+    const result = await this.memberModel
+      .aggregate([
+        { $match: match },
+        { $sort: sort },
+        {
+          $facet: {
+            list: [{ $skip: (input.page - 1) * input.limit }, { $limit: input.limit }],
+            metaCounter: [{ $count: 'total' }],
+          },
+        },
+      ])
+      .exec();
+
+    console.log('result', result);
+    if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+    return result[0];
   }
 
   public async getAllMembersByAdmin(): Promise<string> {
