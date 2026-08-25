@@ -12,6 +12,7 @@ export class RolesGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext | any): Promise<boolean> {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
+
     if (!roles) return true;
 
     console.info(`--- @guard() Authentication [RolesGuard]: ${roles} ---`);
@@ -21,8 +22,9 @@ export class RolesGuard implements CanActivate {
       const bearerToken = request.headers.authorization;
       if (!bearerToken) throw new BadRequestException(Message.TOKEN_NOT_EXIST);
 
-      const token = bearerToken.split(' ')[1],
+      const token = bearerToken.split(' ')[1], // 'bearer svadivnduiab'
         authMember = await this.authService.verifyToken(token),
+        //* [USER, AGENT]
         hasRole = () => roles.indexOf(authMember.memberType) > -1,
         hasPermission: boolean = hasRole();
 
