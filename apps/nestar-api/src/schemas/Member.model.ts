@@ -48,7 +48,7 @@ const MemberSchema = new Schema(
     memberDesc: {
       type: String,
     },
-    memberProperites: {
+    memberProperties: {
       type: Number,
       default: 0,
     },

@@ -9,7 +9,7 @@ import { MemberStatus, MemberType } from '../../libs/enums/member.enum';
 import { AgentsInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member/member.input';
 
 import { Direction, Message } from '../../libs/enums/common.enum';
-import { T } from '../../libs/types/common';
+import { StatsModifier, T } from '../../libs/types/common';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { ViewInput } from '../../libs/dto/view/view.input';
 
@@ -171,6 +171,17 @@ export class MemberService {
   //* ---- UPDATE_MEMBERS_BY_ADMIN -----
   public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
     const result = await this.memberModel.findOneAndUpdate({ _id: input._id }, input, { new: true }).exec();
+    if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+    return result;
+  }
+
+  //* ---- MEMBER_STATS_EDITOR -----
+  public async memberStatsEditor(input: StatsModifier): Promise<Member> {
+    console.log('MEMBER_STATS_EDITOR executed!');
+    const { _id, targetKey, modifier } = input;
+    const result = await this.memberModel
+      .findOneAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
+      .exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     return result;
   }
