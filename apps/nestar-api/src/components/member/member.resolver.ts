@@ -92,8 +92,9 @@ export class MemberResolver {
     return await this.memberService.getAgents(memberId, input);
   }
 
-  //*     ADMIN
-
+  //----------------------------------------------------------
+  //*                       ADMIN
+  //----------------------------------------------------------
   //! ---- GET_ALL MEMBERS_BY_ADMIN -----
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
@@ -115,24 +116,25 @@ export class MemberResolver {
   //----------------------------------------------------------
   //*                      UPLOADER
   //----------------------------------------------------------
-
   //! ---- IMAGE_UPLOADER -----
   @UseGuards(AuthGuard)
   @Mutation((returns) => String)
   public async imageUploader(
     @Args({ name: 'file', type: () => GraphQLUpload })
     { createReadStream, filename, mimetype }: FileUpload,
-    @Args('target') target: String,
+    //*     ?              ✓          ✓
+    @Args('target') target: string,
+    //*   target folder to upload files
   ): Promise<string> {
     console.log('Mutation: imageUploader');
 
-    if (!filename) throw new Error(Message.UPLOAD_FAILED);
+    if (!filename) throw new Error(Message.UPLOAD_FAILED); // ✅
     const validMime = validMimeTypes.includes(mimetype);
-    if (!validMime) throw new Error(Message.PROVIDE_ALLOWED_FORMAT);
+    if (!validMime) throw new Error(Message.PROVIDE_ALLOWED_FORMAT); // ✅
 
-    const imageName = getSerialForImage(filename);
-    const url = `uploads/${target}/${imageName}`;
-    const stream = createReadStream();
+    const imageName = getSerialForImage(filename); // e.g uuid-c3j43jb54fkg6.png
+    const url = `uploads/${target}/${imageName}`; // e.g uploads/member/ uuid-c3j43jb54fkg6.png
+    const stream = createReadStream(); // writing to disk function
 
     const result = await new Promise((resolve, reject) => {
       stream
