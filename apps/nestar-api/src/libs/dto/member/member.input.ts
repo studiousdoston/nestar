@@ -4,6 +4,7 @@ import { MemberAuthType, MemberStatus, MemberType } from '../../enums/member.enu
 import { availableAgentSorts, availableMemberSorts } from '../../config';
 import { Direction } from '../../enums/common.enum';
 
+//*--------------------MemberInput----------------------------
 @InputType()
 export class MemberInput {
   @IsNotEmpty()
@@ -31,7 +32,7 @@ export class MemberInput {
   memberAuthType?: MemberAuthType;
 }
 
-//------------------------------------------------------------------
+//*--------------------LoginInput----------------------------
 @InputType()
 export class LoginInput {
   @IsNotEmpty()

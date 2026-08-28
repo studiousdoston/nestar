@@ -80,24 +80,26 @@ export class MemberService {
         $in: [MemberStatus.ACTIVE, MemberStatus.BLOCK],
       },
     };
-    const targetMember = await this.memberModel.findOne(search).lean().exec();
+    let targetMember = await this.memberModel.findOne(search).lean().exec();
     if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
-    if (memberId) {
-      //* record view
+    //* logged in user and not self-viewing user can create new View doc
+    if (memberId && String(memberId) !== String(targetId)) {
       const viewInput: ViewInput = { memberId, viewRefId: targetId, viewGroup: ViewGroup.MEMBER };
       const newView = await this.viewService.recordView(viewInput);
 
+      //* newView === null | undefined this block gets skipped entirely, cause the viewer has already viewed this particular user(profile) before
       if (newView) {
-        //* increment memberView
-        await this.memberModel.findOneAndUpdate(search, { $inc: { memberViews: 1 } }, { new: true });
-        targetMember.memberViews++;
+        targetMember = await this.memberModel
+          .findOneAndUpdate(search, { $inc: { memberViews: 1 } }, { new: true })
+          .lean()
+          .exec();
+        if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
       }
+
+      //* Liked by me?
+      //* Followed by me?
     }
-
-    //* Liked by me?
-    //* Followed by me?
-
     return targetMember;
   }
 
@@ -168,7 +170,7 @@ export class MemberService {
 
   //* ---- UPDATE_MEMBERS_BY_ADMIN -----
   public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
-    const result = await this.memberModel.findOneAndUpdate({ _id: input._id }, input, { new: true });
+    const result = await this.memberModel.findOneAndUpdate({ _id: input._id }, input, { new: true }).exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     return result;
   }

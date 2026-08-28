@@ -22,6 +22,8 @@ export class ViewService {
   private async checkViewExists(input: ViewInput): Promise<View | null> {
     const { memberId, viewRefId } = input;
     const search: T = { memberId, viewRefId };
-    return await this.viewModel.findOne(search).exec();
+    const result = await this.viewModel.findOne(search).exec();
+    console.log('checkViewExists result ->', result);
+    return result;
   }
 }
