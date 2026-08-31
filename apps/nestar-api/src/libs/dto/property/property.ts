@@ -1,8 +1,9 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import mongoose from 'mongoose';
 import { PropertyLocation, PropertyStatus, PropertyType } from '../../enums/property.enum';
-import { Member } from '../member/member';
+import { Member, TotalCounter } from '../member/member';
 
+//*--------------------Property----------------------------
 @ObjectType()
 export class Property {
   @Field(() => String)
@@ -75,7 +76,17 @@ export class Property {
   createdAt!: Date;
 
   //* From Aggregation
-  
+
   @Field(() => Member, { nullable: true })
   memberData?: Member;
+}
+
+//*--------------------Properties----------------------------
+@ObjectType()
+export class Properties {
+  @Field(() => [Property])
+  list!: Property[];
+
+  @Field(() => [TotalCounter], { nullable: true })
+  metaCounter!: TotalCounter[];
 }
