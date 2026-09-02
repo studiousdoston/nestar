@@ -1,6 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsNotEmpty, IsOptional, Length } from 'class-validator';
-import { BoardArticleStatus } from '../enums/board-article.enum';
+import { BoardArticleStatus } from '../../enums/board-article.enum';
 import * as mongoose from 'mongoose';
 
 @InputType()
