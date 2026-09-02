@@ -67,13 +67,6 @@ export class PropertyService {
     return targetProperty;
   }
 
-  //* ---- PROPERTY_STATS_EDITOR -----
-  public async propertyStatsEditor(input: StatsModifier): Promise<Property | null> {
-    const { _id, targetKey, modifier } = input;
-
-    return await this.propertyModel.findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true }).exec();
-  }
-
   //* ---- UPDATE_PROPERTY -----
   public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
     let { propertyStatus, soldAt, deletedAt } = input;
@@ -266,5 +259,12 @@ export class PropertyService {
     if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
 
     return result;
+  }
+  
+  //* ---- PROPERTY_STATS_EDITOR -----
+  public async propertyStatsEditor(input: StatsModifier): Promise<Property | null> {
+    const { _id, targetKey, modifier } = input;
+
+    return await this.propertyModel.findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true }).exec();
   }
 }
