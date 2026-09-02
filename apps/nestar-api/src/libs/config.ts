@@ -16,6 +16,8 @@ export const availablePropertySorts = [
   'propertyPrice',
 ];
 
+export const availableBoardArticleSorts = ['createdAt', 'updatedAt', 'articleLikes', 'articleViews'];
+
 //* IMAGE CONFIGURATION
 export const validMimeTypes = ['image/png', 'image/jpg', 'image/jpeg'];
 
@@ -28,7 +30,6 @@ export const getSerialForImage = (filename: string) => {
 export const shapeIntoMongoObjectId = (target: any) => {
   return typeof target === 'string' ? new ObjectId(target) : target;
 };
-
 
 export const lookupMember = {
   $lookup: {
