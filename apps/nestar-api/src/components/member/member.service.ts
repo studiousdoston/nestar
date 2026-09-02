@@ -73,7 +73,7 @@ export class MemberService {
   }
 
   //* ---- GET_MEMBER -----
-  public async getMember(memberId: ObjectId| null, targetId: ObjectId): Promise<Member> {
+  public async getMember(memberId: ObjectId | null, targetId: ObjectId): Promise<Member> {
     const search: T = {
       _id: targetId,
       memberStatus: {
@@ -180,7 +180,7 @@ export class MemberService {
     console.log('MEMBER_STATS_EDITOR executed!');
     const { _id, targetKey, modifier } = input;
     const result = await this.memberModel
-      .findOneAndUpdate({ _id }, { $inc: { [targetKey]: modifier } }, { new: true })
+      .findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
       .exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     return result;
