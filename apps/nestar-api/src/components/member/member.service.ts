@@ -88,12 +88,10 @@ export class MemberService {
     let targetMember = await this.memberModel.findOne(search).lean().exec();
     if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
-    //* logged in user and not self-viewing user can create new View doc
     if (memberId && String(memberId) !== String(targetId)) {
       const viewInput: ViewInput = { memberId, viewRefId: targetId, viewGroup: ViewGroup.MEMBER };
       const newView = await this.viewService.recordView(viewInput);
 
-      //* newView === null | undefined this block gets skipped entirely, cause the viewer has already viewed this particular user(profile) before
       if (newView) {
         targetMember = await this.memberModel
           .findOneAndUpdate(search, { $inc: { memberViews: 1 } }, { new: true })
@@ -103,6 +101,9 @@ export class MemberService {
       }
 
       //* Liked by me?
+      const likeInput = { memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
+      (targetMember as unknown as Member).meLiked = await this.likeService.checkLikeExistance(likeInput);
+
       //* Followed by me?
     }
     return targetMember;
