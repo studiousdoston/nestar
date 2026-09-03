@@ -12,6 +12,10 @@ import { Direction, Message } from '../../libs/enums/common.enum';
 import { StatsModifier, T } from '../../libs/types/common';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { ViewInput } from '../../libs/dto/view/view.input';
+import { shapeIntoMongoObjectId } from '../../libs/config';
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { LikeService } from '../like/like.service';
 
 @Injectable()
 export class MemberService {
@@ -19,6 +23,7 @@ export class MemberService {
     @InjectModel('Member') private readonly memberModel: Model<Member>,
     private authService: AuthService,
     private viewService: ViewService,
+    private likeService: LikeService,
   ) {}
 
   //* ---- SIGNUP -----
@@ -133,6 +138,22 @@ export class MemberService {
     console.log('result', result);
     if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
     return result[0];
+  }
+
+  //* ---- LIKE_TARGET_MEMBER -----
+  public async likeTargetMember(memberId: ObjectId, likeRefId: ObjectId): Promise<Member> {
+    const target = await this.memberModel.findOne({ _id: likeRefId, memberStatus: MemberStatus.ACTIVE }).exec();
+
+    if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+    const input: LikeInput = { memberId, likeRefId, likeGroup: LikeGroup.MEMBER };
+
+    //* LIKE TOGGLE via Like modules
+    const modifier: number = await this.likeService.toggleLike(input)
+    const result = await this.memberStatsEditor({ _id: likeRefId, targetKey: 'memberLikes', modifier });
+
+    if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+    return result;
   }
 
   //*---- GET_ALL MEMBERS_BY_ADMIN -----
