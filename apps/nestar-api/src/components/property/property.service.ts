@@ -18,6 +18,9 @@ import { ViewService } from '../view/view.service';
 import { StatsModifier, T } from '../../libs/types/common';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { LikeService } from '../like/like.service';
 
 @Injectable()
 export class PropertyService {
@@ -25,6 +28,7 @@ export class PropertyService {
     @InjectModel('Property') private readonly propertyModel: Model<Property>,
     private readonly memberService: MemberService,
     private readonly viewService: ViewService,
+    private readonly likeService: LikeService,
   ) {}
 
   //* ---- CREATE_PROPERTY -----
@@ -193,6 +197,25 @@ export class PropertyService {
     return result[0];
   }
 
+  //* ---- LIKE_TARGET_PROPERTY -----
+  public async likeTargetProperty(memberId: ObjectId, likeRefId: ObjectId): Promise<Property> {
+    const target = await this.propertyModel.findOne({ _id: likeRefId, propertyStatus: PropertyStatus.ACTIVE }).exec();
+
+    if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+    const input: LikeInput = { memberId, likeRefId, likeGroup: LikeGroup.PROPERTY };
+
+    const modifier: number = await this.likeService.toggleLike(input);
+    const result = await this.propertyStatsEditor({ _id: likeRefId, targetKey: 'propertyLikes', modifier });
+
+    if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+    return result;
+  }
+
+  //-------------------------------------------------------------
+  //*                        ADMIN
+  //-------------------------------------------------------------
+
   //* ---- GET_ALL_PROPERTIES_BY_ADMIN -----
   public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Properties> {
     const { propertyStatus, propertyLocationList } = input.search;
@@ -260,7 +283,7 @@ export class PropertyService {
 
     return result;
   }
-  
+
   //* ---- PROPERTY_STATS_EDITOR -----
   public async propertyStatsEditor(input: StatsModifier): Promise<Property | null> {
     const { _id, targetKey, modifier } = input;
