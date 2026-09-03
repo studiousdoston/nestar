@@ -57,7 +57,7 @@ export class CommentResolver {
   //*                        ADMIN
   //-------------------------------------------------------------
 
-  //! REMOVE_COMMENT_BY_ADMIN
+  //!  REMOVE_COMMENT_BY_ADMIN
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Mutation((returns) => Comment)
