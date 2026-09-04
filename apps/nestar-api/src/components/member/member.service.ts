@@ -16,11 +16,13 @@ import { shapeIntoMongoObjectId } from '../../libs/config';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeService } from '../like/like.service';
+import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 
 @Injectable()
 export class MemberService {
   constructor(
     @InjectModel('Member') private readonly memberModel: Model<Member>,
+    @InjectModel('Follow') private readonly followModel: Model<Follower | Following>,
     private authService: AuthService,
     private viewService: ViewService,
     private likeService: LikeService,
@@ -99,14 +101,20 @@ export class MemberService {
           .exec();
         if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
       }
-
-      //* Liked by me?
+      // Liked by me?
       const likeInput = { memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
       (targetMember as unknown as Member).meLiked = await this.likeService.checkLikeExistance(likeInput);
 
-      //* Followed by me?
+      (targetMember as unknown as Member).meFollowed = await this.checkSubscription(memberId, targetId);
     }
+
     return targetMember;
+  }
+
+  //* ---- CHECK_SUBSCRIPTION ----
+  private async checkSubscription(followerId: ObjectId, followingId: ObjectId): Promise<MeFollowed[]> {
+    const result = await this.followModel.findOne({ followingId, followerId }).exec();
+    return result ? [{ followerId, followingId, myFollowing: true }] : [];
   }
 
   //* ---- GET_AGENTS -----
