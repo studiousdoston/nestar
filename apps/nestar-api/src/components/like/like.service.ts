@@ -44,6 +44,7 @@ export class LikeService {
     return result ? [{ memberId, likeRefId, myFavorite: true }] : [];
   }
 
+  //* ---- GET_FAVORITE_PROPERTIES
   public async getFavoriteProperties(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {
     const { page, limit } = input;
     const match: T = {
