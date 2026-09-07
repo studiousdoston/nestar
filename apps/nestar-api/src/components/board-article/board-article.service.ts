@@ -73,6 +73,7 @@ export class BoardArticleService {
     return targetBoardArticle;
   }
 
+  //* ---- BOARD_ARTICLE_STATS_EDITOR -----
   public async boardArticleStatsEditor(input: StatsModifier): Promise<BoardArticle | null> {
     const { _id, targetKey, modifier } = input;
     const result = await this.boardArticleModel

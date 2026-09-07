@@ -10,6 +10,7 @@ import { Message } from '../../libs/enums/common.enum';
 export class LikeService {
   constructor(@InjectModel('Like') private readonly likeModel: Model<Like>) {}
 
+  //* ---- TOGGLE_LIKE -----
   public async toggleLike(input: LikeInput): Promise<number> {
     const { memberId, likeRefId } = input;
     const search: T = { memberId, likeRefId };
@@ -31,6 +32,7 @@ export class LikeService {
     return modifier;
   }
 
+  //* ---- CHECK_LIKE_EXISTANCE -----
   public async checkLikeExistance(input: LikeInput): Promise<MeLiked[]> {
     const { memberId, likeRefId } = input;
     const result = await this.likeModel.findOne({ memberId, likeRefId }).exec();

@@ -104,7 +104,7 @@ export class MemberService {
       // Liked by me?
       const likeInput = { memberId, likeRefId: targetId, likeGroup: LikeGroup.MEMBER };
       (targetMember as unknown as Member).meLiked = await this.likeService.checkLikeExistance(likeInput);
-
+      // followed by me?
       (targetMember as unknown as Member).meFollowed = await this.checkSubscription(memberId, targetId);
     }
 
@@ -164,6 +164,21 @@ export class MemberService {
     return result;
   }
 
+  //* ---- MEMBER_STATS_EDITOR -----
+  public async memberStatsEditor(input: StatsModifier): Promise<Member> {
+    console.log('MEMBER_STATS_EDITOR executed!');
+    const { _id, targetKey, modifier } = input;
+    const result = await this.memberModel
+      .findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
+      .exec();
+    if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
+    return result;
+  }
+
+  //----------------------------------------------------------
+  //*                       ADMIN
+  //----------------------------------------------------------
+
   //*---- GET_ALL MEMBERS_BY_ADMIN -----
   public async getAllMembersByAdmin(input: MembersInquiry): Promise<Members> {
     const { memberStatus, memberType, text } = input.search;
@@ -200,17 +215,6 @@ export class MemberService {
   //* ---- UPDATE_MEMBERS_BY_ADMIN -----
   public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
     const result = await this.memberModel.findOneAndUpdate({ _id: input._id }, input, { new: true }).exec();
-    if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
-    return result;
-  }
-
-  //* ---- MEMBER_STATS_EDITOR -----
-  public async memberStatsEditor(input: StatsModifier): Promise<Member> {
-    console.log('MEMBER_STATS_EDITOR executed!');
-    const { _id, targetKey, modifier } = input;
-    const result = await this.memberModel
-      .findByIdAndUpdate(_id, { $inc: { [targetKey]: modifier } }, { new: true })
-      .exec();
     if (!result) throw new InternalServerErrorException(Message.UPDATE_FAILED);
     return result;
   }
