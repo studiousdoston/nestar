@@ -134,7 +134,7 @@ class PISearch {
 
   @IsOptional()
   @Field(() => priceRange, { nullable: true })
-  priceRange?: priceRange;
+  pricesRange?: priceRange;
 
   @IsOptional()
   @Field(() => PeriodsRange, { nullable: true })

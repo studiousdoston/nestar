@@ -1,5 +1,5 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
-import { IsIn, IsNotEmpty, IsOptional, Length, Min } from 'class-validator';
+import { IsEnum, IsIn, IsNotEmpty, IsOptional, Length, Min } from 'class-validator';
 import { MemberAuthType, MemberStatus, MemberType } from '../../enums/member.enum';
 import { availableAgentSorts, availableMemberSorts } from '../../config';
 import { Direction } from '../../enums/common.enum';
@@ -73,12 +73,12 @@ export class AgentsInquiry {
   sort?: string;
 
   @IsOptional()
-  @IsIn(availableAgentSorts)
+  @IsEnum(Direction)
   @Field(() => Direction, { nullable: true })
   direction?: Direction;
 
-  @IsNotEmpty()
-  @Field(() => AISearch)
+  @IsOptional()
+  @Field(() => AISearch, { nullable: true })
   search!: AISearch;
 }
 
@@ -120,7 +120,7 @@ export class MembersInquiry {
   @Field(() => Direction, { nullable: true })
   direction?: Direction;
 
-  @IsNotEmpty()
-  @Field(() => MISearch)
+  @IsOptional()
+  @Field(() => MISearch, { nullable: true })
   search!: MISearch;
 }
